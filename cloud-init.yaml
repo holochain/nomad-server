@@ -2,5 +2,5 @@
 packages:
   - nomad
 runcmd:
-  - sudo systemctl enable nomad
-  - sudo systemctl start nomad
+  - systemctl enable nomad
+  - systemctl start nomad
