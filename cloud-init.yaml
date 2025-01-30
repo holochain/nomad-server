@@ -1,6 +1,6 @@
 #cloud-config
+packages:
+  - nomad
 runcmd:
-  - sudo apt-get update
-  - sudo apt-get install -y nomad
   - sudo systemctl enable nomad
   - sudo systemctl start nomad
