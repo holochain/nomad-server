@@ -16,7 +16,12 @@ jobs:
         run: sudo apt-get install -y cloud-init
       - name: Lint cloud-init file
         run: |
-          cloud-init schema -c cloud-init.yaml >> $GITHUB_STEP_SUMMARY
+          if ! cloud-init schema -c cloud-init.yaml 2> >(tee stderr.log) >> $GITHUB_STEP_SUMMARY
+          then
+            # Print errors as such in GitHub logs.
+            cat stderr.log | grep "in.*line.*column" -B1 -A1 --no-group-separator | sed -z 's/\([^\n]*\)\n\s*in "\([^"]*\)", line \([[:digit:]]\+\), column \([[:digit:]]\+\):\s*/::error file=cloud-init.yaml,title=\1 in \2,line=\3,col=\4::/g'
+            exit 1
+          fi
 
   preview:
     runs-on: ubuntu-latest
