@@ -1,6 +1,14 @@
 #cloud-config
 packages:
   - nomad
+write_files:
+  - path: /etc/nomad/server.conf.hcl
+    content: |
+      data_dir  = "/var/lib/nomad"
+
+      server {
+        enabled          = true
+        bootstrap_expect = 1 # should increase this after testing
+      }
 runcmd:
-  - systemctl enable nomad
-  - systemctl start nomad
+  - nomad agent -c /etc/nomad/server.conf.hcl
