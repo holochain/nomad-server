@@ -40,6 +40,7 @@ jobs:
   ci_pass:
     if: always()
     needs:
+      - lint
       - preview
     runs-on: Ubuntu-latest
     steps:
