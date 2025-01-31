@@ -3,13 +3,14 @@ package main
 import (
 	"github.com/pulumi/pulumi-digitalocean/sdk/v4/go/digitalocean"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"log"
 	"os"
 )
 
 func main() {
 	userData, err := os.ReadFile("cloud-init.yaml")
 	if err != nil {
-		return
+		log.Fatalf("failed to read droplet user data from file: %s", err)
 	}
 
 	pulumi.Run(func(ctx *pulumi.Context) error {
@@ -29,4 +30,3 @@ func main() {
 		return nil
 	})
 }
-
