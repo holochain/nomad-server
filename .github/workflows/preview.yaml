@@ -6,6 +6,13 @@ on:
       - main
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint cloud-init file
+        uses: anderssonpeter/cloud-init-linter@v1
+
   preview:
     runs-on: ubuntu-latest
     steps:
