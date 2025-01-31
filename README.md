@@ -36,6 +36,12 @@ Then preview the changes with:
 pulumi preview
 ```
 
+### Applying changes
+
+Simply open a PR to see the preview of the changes in the CI. Then, once the PR
+is reviewed and merged into the `main` branch, a new workflow will push the
+changes to Pulumi.
+
 ## Chaning the DigitalOcean token
 
 Pulumi requires a Personal Access Token (PAT) for DigitalOcean to make calls to the API.
@@ -47,3 +53,6 @@ pulumi config set --secret digitalocean:token <new-token>
 ```
 
 This value is encrypted by Pulumi and stored in [Pulumi.nomad-server.yaml].
+
+Remember to open a PR with the new token and allow the CI/Actions to apply the
+changes to Pulumi.
