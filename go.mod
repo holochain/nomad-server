@@ -1,8 +1,6 @@
 module nomad-server
 
-go 1.21
-
-toolchain go1.21.1
+go 1.23.5
 
 require (
 	github.com/pulumi/pulumi-digitalocean/sdk/v4 v4.38.0
