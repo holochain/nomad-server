@@ -15,7 +15,8 @@ jobs:
       - name: Install cloud-init
         run: sudo apt-get install -y cloud-init
       - name: Lint cloud-init file
-        run: cloud-init schema -c cloud-init.yaml
+        run: |
+          cloud-init schema -c cloud-init.yaml >> $GITHUB_STEP_SUMMARY
 
   preview:
     runs-on: ubuntu-latest
