@@ -14,13 +14,24 @@ func main() {
 	}
 
 	pulumi.Run(func(ctx *pulumi.Context) error {
-		_, err := digitalocean.NewDroplet(ctx, "nomad-server-01", &digitalocean.DropletArgs{
+		getSshKeysResult, err := digitalocean.GetSshKeys(ctx, &digitalocean.GetSshKeysArgs{}, nil)
+		if err != nil {
+			return err
+		}
+
+		var sshFingerprints []string
+		for _, key := range getSshKeysResult.SshKeys {
+			sshFingerprints = append(sshFingerprints, key.Fingerprint)
+		}
+
+		_, err = digitalocean.NewDroplet(ctx, "nomad-server-01", &digitalocean.DropletArgs{
 			Image:    pulumi.String("ubuntu-24-04-x64"),
 			Name:     pulumi.String("nomad-server-01"),
 			Region:   pulumi.String(digitalocean.RegionAMS3),
 			Size:     pulumi.String(digitalocean.DropletSlugDropletS1VCPU512MB10GB),
 			Ipv6:     pulumi.Bool(true),
 			Tags:     pulumi.StringArray{pulumi.String("nomad")},
+			SshKeys:  pulumi.ToStringArray(sshFingerprints),
 			UserData: pulumi.String(userData),
 		})
 		if err != nil {
