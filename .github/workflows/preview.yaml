@@ -1,0 +1,38 @@
+name: Preview
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ./go.mod
+      - name: Install dependencies
+        run: go get .
+      - name: Build
+        run: go build -v ./...
+      - uses: pulumi/actions@v6
+        with:
+          command: preview
+          stack-name: holochain/nomad-server
+          comment-on-pr: true
+          diff: true
+          github-token: ${{ secrets.HRA2_GITHUB_TOKEN }}
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.HRA2_PULUMI_ACCESS_TOKEN }}
+  ci_pass:
+    if: always()
+    needs:
+      - preview
+    runs-on: Ubuntu-latest
+    steps:
+      - name: Decide whether the required jobs succeeded or failed
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
