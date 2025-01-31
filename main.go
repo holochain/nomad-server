@@ -14,7 +14,7 @@ func main() {
 	}
 
 	pulumi.Run(func(ctx *pulumi.Context) error {
-		_, err := digitalocean.NewDroplet(ctx, "nomad-server", &digitalocean.DropletArgs{
+		_, err := digitalocean.NewDroplet(ctx, "nomad-server-01", &digitalocean.DropletArgs{
 			Image:    pulumi.String("ubuntu-24-04-x64"),
 			Name:     pulumi.String("nomad-server-01"),
 			Region:   pulumi.String(digitalocean.RegionAMS3),
