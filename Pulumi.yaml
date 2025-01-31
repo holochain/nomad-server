@@ -1,6 +1,3 @@
 name: nomad-server
 runtime: go
 description: A Pulumi definition for deploying a cluster of Nomad servers as DigitalOcean droplets.
-config:
-    digitalocean:token:
-        value: 'TODO: var.do_token'
