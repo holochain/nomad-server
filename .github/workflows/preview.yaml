@@ -10,8 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Update apt index
+        run: sudo apt-get update
+      - name: Install cloud-init
+        run: sudo apt-get install -y cloud-init
       - name: Lint cloud-init file
-        uses: anderssonpeter/cloud-init-linter@v1
+        run: cloud-init schema -c cloud-init.yaml
 
   preview:
     runs-on: ubuntu-latest
