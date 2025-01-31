@@ -35,3 +35,15 @@ Then preview the changes with:
 ```sh
 pulumi preview
 ```
+
+## Chaning the DigitalOcean token
+
+Pulumi requires a Personal Access Token (PAT) for DigitalOcean to make calls to the API.
+
+Currently the PAT is linked to the `cdunster` DigitalOcean user account. To
+change the token, run the following command:
+```sh
+pulumi config set --secret digitalocean:token <new-token>
+```
+
+This value is encrypted by Pulumi and stored in [Pulumi.nomad-server.yaml].
