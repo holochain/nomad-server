@@ -18,7 +18,7 @@ Next, set the default organisation to `holochain` with:
 pulumi org set-default holochain
 ```
 
-Finally, select the Pulumi stack that you want to use, for this repo it is `nomad-server`.
+Finally, select the Pulumi stack that you want to use. For this repo it is `nomad-server`.
 ```sh
 pulumi stack select nomad-server
 ```
@@ -42,7 +42,7 @@ Simply open a PR to see the preview of the changes in the CI. Then, once the PR
 is reviewed and merged into the `main` branch, a new workflow will push the
 changes to Pulumi.
 
-## Chaning the DigitalOcean token
+## Changing the DigitalOcean token
 
 Pulumi requires a Personal Access Token (PAT) for DigitalOcean to make calls to the API.
 
