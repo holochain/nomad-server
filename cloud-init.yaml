@@ -1,4 +1,10 @@
 #cloud-config
+apt:
+  sources:
+    hashicorp:
+      source: deb https://apt.releases.hashicorp.com noble main
+      keyserver: https://apt.releases.hashicorp.com/gpg
+      keyid: AA16FCBCA621E701
 packages:
   - nomad
 write_files:
