@@ -17,4 +17,5 @@ write_files:
         bootstrap_expect = 1 # should increase this after testing
       }
 runcmd:
-  - nomad agent -c /etc/nomad/server.conf.hcl
+  - systemctl enable nomad.service
+  - systemctl start nomad.service
