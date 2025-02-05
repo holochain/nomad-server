@@ -8,7 +8,7 @@ apt:
 packages:
   - nomad
 write_files:
-  - path: /etc/nomad/server.conf.hcl
+  - path: /etc/nomad.d/nomad.hcl
     content: |
       data_dir  = "/var/lib/nomad"
 
