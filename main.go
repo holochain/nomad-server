@@ -1,10 +1,12 @@
 package main
 
 import (
-	"github.com/pulumi/pulumi-digitalocean/sdk/v4/go/digitalocean"
-	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"log"
 	"os"
+	"strconv"
+
+	"github.com/pulumi/pulumi-digitalocean/sdk/v4/go/digitalocean"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 func main() {
@@ -24,7 +26,7 @@ func main() {
 			sshFingerprints = append(sshFingerprints, key.Fingerprint)
 		}
 
-		_, err = digitalocean.NewDroplet(ctx, "nomad-server-01", &digitalocean.DropletArgs{
+		droplet, err := digitalocean.NewDroplet(ctx, "nomad-server-01", &digitalocean.DropletArgs{
 			Image:    pulumi.String("ubuntu-24-04-x64"),
 			Name:     pulumi.String("nomad-server-01"),
 			Region:   pulumi.String(digitalocean.RegionAMS3),
@@ -33,6 +35,16 @@ func main() {
 			Tags:     pulumi.StringArray{pulumi.String("nomad")},
 			SshKeys:  pulumi.ToStringArray(sshFingerprints),
 			UserData: pulumi.String(userData),
+		})
+		if err != nil {
+			return err
+		}
+		_, err = digitalocean.NewReservedIp(ctx, "nomad-server-ipv4", &digitalocean.ReservedIpArgs{
+			DropletId: droplet.ID().ApplyT(func(dropletId string) (*int, error) {
+				id, err := strconv.Atoi(dropletId)
+				return &id, err
+			}).(pulumi.IntPtrOutput),
+			Region: droplet.Region,
 		})
 		if err != nil {
 			return err
