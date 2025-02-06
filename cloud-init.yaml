@@ -16,6 +16,12 @@ write_files:
         enabled = true
       }
 
+      advertise {
+        http = "{{ GetPublicIP }}"
+        rpc  = "{{ GetPublicIP }}"
+        serf = "{{ GetPublicIP }}"
+      }
+
       server {
         enabled          = true
         bootstrap_expect = 1 # should increase this after testing
