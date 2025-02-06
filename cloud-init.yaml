@@ -12,6 +12,10 @@ write_files:
     content: |
       data_dir  = "/var/lib/nomad"
 
+      acl {
+        enabled = true
+      }
+
       server {
         enabled          = true
         bootstrap_expect = 1 # should increase this after testing
