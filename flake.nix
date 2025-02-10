@@ -10,8 +10,9 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [ "aarch64-darwin" "x86_64-linux" ];
 
-      perSystem = { pkgs, ... }:
+      perSystem = { pkgs, system, ... }:
         let
+          unfreePkgs = import inputs.nixpkgs { inherit system; config.allowUnfree = true; };
           # Bundle the Pulumi binary with the language package to remove the
           # warning about them not being in the same directory.
           # See: https://github.com/pulumi/pulumi/issues/14525
@@ -34,6 +35,7 @@
             packages = with pkgs; [
               go
               pulumiBundle
+              unfreePkgs.nomad
             ];
           };
         };
