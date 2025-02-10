@@ -16,6 +16,14 @@ func main() {
 	}
 
 	pulumi.Run(func(ctx *pulumi.Context) error {
+		region := digitalocean.RegionAMS3
+		reservedIp, err := digitalocean.NewReservedIp(ctx, "nomad-server-01-reserved-ip", &digitalocean.ReservedIpArgs{
+			Region: region,
+		})
+		if err != nil {
+			return err
+		}
+
 		getSshKeysResult, err := digitalocean.GetSshKeys(ctx, &digitalocean.GetSshKeysArgs{}, nil)
 		if err != nil {
 			return err
@@ -29,7 +37,7 @@ func main() {
 		droplet, err := digitalocean.NewDroplet(ctx, "nomad-server-01", &digitalocean.DropletArgs{
 			Image:    pulumi.String("ubuntu-24-04-x64"),
 			Name:     pulumi.String("nomad-server-01"),
-			Region:   pulumi.String(digitalocean.RegionAMS3),
+			Region:   region,
 			Size:     pulumi.String(digitalocean.DropletSlugDropletS1VCPU512MB10GB),
 			Ipv6:     pulumi.Bool(true),
 			Tags:     pulumi.StringArray{pulumi.String("nomad")},
@@ -39,12 +47,12 @@ func main() {
 		if err != nil {
 			return err
 		}
-		_, err = digitalocean.NewReservedIp(ctx, "nomad-server-ipv4", &digitalocean.ReservedIpArgs{
-			DropletId: droplet.ID().ApplyT(func(dropletId string) (*int, error) {
+		_, err = digitalocean.NewReservedIpAssignment(ctx, "nomad-server-01-ip-assign", &digitalocean.ReservedIpAssignmentArgs{
+			IpAddress: reservedIp.IpAddress,
+			DropletId: droplet.ID().ApplyT(func(dropletId string) (int, error) {
 				id, err := strconv.Atoi(dropletId)
-				return &id, err
-			}).(pulumi.IntPtrOutput),
-			Region: droplet.Region,
+				return id, err
+			}).(pulumi.IntInput),
 		})
 		if err != nil {
 			return err
