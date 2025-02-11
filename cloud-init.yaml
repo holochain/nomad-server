@@ -25,6 +25,18 @@ write_files:
         enabled          = true
         bootstrap_expect = 1 # should increase this after testing
       }
+
+      tls {
+        http = true
+        rpc  = true
+
+        ca_file   = "/etc/nomad.d/nomad-agent-ca.pem"
+        cert_file = "/etc/nomad.d/global-server-nomad.pem"
+        key_file  = "/etc/nomad.d/global-server-nomad-key.pem"
+
+        verify_server_hostname = true
+      }
+
   - path: /usr/lib/systemd/system/nomad.service
     content: |
       [Unit]
@@ -62,3 +74,8 @@ runcmd:
   - chown -R nomad:nomad /var/lib/nomad
   - systemctl enable nomad.service
   - systemctl start nomad.service
+  - cd /etc/nomad.d
+  - nomad acl bootstrap >> bootstrap.token
+  - nomad tls ca create
+  - nomad tls cert create -server
+  - chown -R nomad:nomad /etc/nomad.d
