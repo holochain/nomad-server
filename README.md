@@ -56,3 +56,35 @@ This value is encrypted by Pulumi and stored in [Pulumi.nomad-server.yaml].
 
 Remember to open a PR with the new token and allow the CI/Actions to apply the
 changes to Pulumi.
+
+## Deployment
+
+Some changes to the definition of the DigitalOcean droplet will require the
+droplet to be destroyed and re-created.
+
+If this happens or if we want to deliberately re-create the server then the TLS
+certificates, TLS keys, and the ACL bootstrap token will all need to be
+re-created on the new server.
+
+Most of this is automated with Pulumi, however, there is one manual step to
+bootstrap the ACL support and update the token in BitWarden used by developers
+to access and manage the server.
+
+First, SSH into the Nomad server, this should be accessible at
+`nomad-server-01.holochain.org` and if your SSH key is in DigitalOcean then you
+should also have access to is.
+
+```sh
+ssh root@nomad-server-01.holochain.org
+```
+
+Then to bootstrap ACL run the following:
+```console
+nomad acl bootstrap -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -address=https://127.0.0.1:4646
+```
+
+This should print the ACL bootstrap token details, copy the `Secret ID` into
+the `Nomad Server Bootstrap Token` login item in the Holo BitWarden vault.
+
+Now, navigate to <https://nomad-server-01.holochain.org:4646/ui/settings/tokens>
+and use the token to login. You should now have full access to the new nomad server.
