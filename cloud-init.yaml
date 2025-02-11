@@ -19,7 +19,6 @@ write_files:
       advertise {
         http = "{{ GetPublicIP }}"
         rpc  = "{{ GetPublicIP }}"
-        serf = "{{ GetPublicIP }}"
       }
 
       server {
