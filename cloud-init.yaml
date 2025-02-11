@@ -30,6 +30,8 @@ write_files:
         http = true
         rpc  = true
 
+        rpc_upgrade_mode = true # Allows clients to connect without TLS
+
         ca_file   = "/etc/nomad.d/nomad-agent-ca.pem"
         cert_file = "/etc/nomad.d/global-server-nomad.pem"
         key_file  = "/etc/nomad.d/global-server-nomad-key.pem"
