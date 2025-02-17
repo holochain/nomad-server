@@ -79,5 +79,5 @@ runcmd:
   - cd /etc/nomad.d
   - nomad acl bootstrap >> bootstrap.token
   - nomad tls ca create
-  - nomad tls cert create -server
+  - nomad tls cert create -server -additional-dnsname=nomad-server-01.holochain.org
   - chown -R nomad:nomad /etc/nomad.d
