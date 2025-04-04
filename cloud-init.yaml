@@ -24,6 +24,7 @@ write_files:
       server {
         enabled          = true
         bootstrap_expect = 1 # should increase this after testing
+        job_gc_threshold = "24h"
       }
 
       tls {
