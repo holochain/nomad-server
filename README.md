@@ -72,7 +72,7 @@ to access and manage the server.
 
 First, SSH into the Nomad server, this should be accessible at
 `nomad-server-01.holochain.org` and if your SSH key is in DigitalOcean then you
-should also have access to is.
+should also have access to it.
 
 ```sh
 ssh root@nomad-server-01.holochain.org
