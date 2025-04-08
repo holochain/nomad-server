@@ -119,12 +119,24 @@ func main() {
 			return err
 		}
 
+		copyCaCertKey, err := remote.NewCommand(ctx, "copy-ca-key", &remote.CommandArgs{
+			Connection: conn,
+			Environment: pulumi.StringMap{
+				"LC_CA_KEY": cfg.RequireSecret("caCertKey"),
+			},
+			Create: pulumi.String("echo \"$LC_CA_KEY\" > /etc/nomad.d/nomad-agent-ca-key.pem"),
+		}, pulumi.DependsOn([]pulumi.Resource{createEtcNomadDir}))
+		if err != nil {
+			return err
+		}
+
 		_, err = remote.NewCommand(ctx, "chown-etc-nomad-dir", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("chown -R nomad:nomad /etc/nomad.d"),
 		}, pulumi.DependsOn([]pulumi.Resource{
 			createEtcNomadDir,
 			copyCaCert,
+			copyCaCertKey,
 			copyNomadConfig,
 		}))
 		if err != nil {
