@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/pulumi/pulumi-command/sdk/go/command/remote"
 	"github.com/pulumi/pulumi-digitalocean/sdk/v4/go/digitalocean"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
@@ -65,6 +66,40 @@ func main() {
 				return id, err
 			}).(pulumi.IntInput),
 		}, pulumi.DependsOn([]pulumi.Resource{reservedIp, droplet}))
+		if err != nil {
+			return err
+		}
+
+		conn := remote.ConnectionArgs{
+			Host:       droplet.Ipv4Address,
+			User:       pulumi.String("root"),
+			PrivateKey: cfg.RequireSecret("serverAccessPrivateKey"),
+		}
+
+		createEtcNomadDir, err := remote.NewCommand(ctx, "create-etc-nomad-dir", &remote.CommandArgs{
+			Connection: conn,
+			Create:     pulumi.String("mkdir -p /etc/nomad.d"),
+		}, pulumi.DependsOn([]pulumi.Resource{droplet}))
+		if err != nil {
+			return err
+		}
+
+		copyCaCert, err := remote.NewCopyToRemote(ctx, "copy-ca-cert", &remote.CopyToRemoteArgs{
+			Connection: conn,
+			RemotePath: pulumi.String("/etc/nomad.d/nomad-agent-ca.pem"),
+			Source:     pulumi.NewFileAsset("./nomad-agent-ca.pem"),
+		}, pulumi.DependsOn([]pulumi.Resource{createEtcNomadDir}))
+		if err != nil {
+			return err
+		}
+
+		_, err = remote.NewCommand(ctx, "chown-etc-nomad-dir", &remote.CommandArgs{
+			Connection: conn,
+			Create:     pulumi.String("chown -R nomad:nomad /etc/nomad.d"),
+		}, pulumi.DependsOn([]pulumi.Resource{
+			createEtcNomadDir,
+			copyCaCert,
+		}))
 		if err != nil {
 			return err
 		}
