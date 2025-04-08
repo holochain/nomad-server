@@ -1,3 +1,4 @@
 config:
   digitalocean:token:
     secure: AAABAJsSgYkshC0TTaCh52msRlkbYh+lTBCnHni5QRVB5ZpoS8pogh3/HzZwAPfrhbBpiJ6FeyRBHITy3BDuxaUWTkm1QMh6ts/YSqRSTj63nnrfVKafWNylvsaxN6cXYwgYPgBWHQ==
+  nomad-server:serverAccessPublicKey: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL4k+fb1grxqsEBynsUe9smn/1FaMrIT7M5HMT8H2nU3
