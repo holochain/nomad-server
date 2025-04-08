@@ -93,6 +93,15 @@ func main() {
 			return err
 		}
 
+		_, err = remote.NewCopyToRemote(ctx, "copy-nomad-service-config", &remote.CopyToRemoteArgs{
+			Connection: conn,
+			RemotePath: pulumi.String("/usr/lib/systemd/system/nomad.service"),
+			Source:     pulumi.NewFileAsset("./nomad.service"),
+		})
+		if err != nil {
+			return err
+		}
+
 		_, err = remote.NewCommand(ctx, "chown-etc-nomad-dir", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("chown -R nomad:nomad /etc/nomad.d"),

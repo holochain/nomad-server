@@ -1,0 +1,31 @@
+[Unit]
+Description=Nomad
+Documentation=https://nomadproject.io/docs/
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+# Nomad servers should be run as the "nomad" user.
+User=nomad
+Group=nomad
+
+Type=notify
+EnvironmentFile=-/etc/nomad.d/nomad.env
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/bin/nomad agent -config /etc/nomad.d
+KillMode=process
+KillSignal=SIGINT
+LimitNOFILE=65536
+LimitNPROC=infinity
+Restart=on-failure
+RestartSec=2
+
+TasksMax=infinity
+
+# Nomad Server agents should never be force killed,
+# so here we disable OOM (out of memory) killing for this unit.
+OOMScoreAdjust=-1000
+
+[Install]
+WantedBy=multi-user.target
+
