@@ -104,39 +104,47 @@ func main() {
 			return err
 		}
 
+		caCertFile := pulumi.NewFileAsset("./nomad-agent-ca.pem")
 		copyCaCert, err := remote.NewCopyToRemote(ctx, "copy-ca-cert", &remote.CopyToRemoteArgs{
 			Connection: conn,
 			RemotePath: pulumi.String("/etc/nomad.d/nomad-agent-ca.pem"),
-			Source:     pulumi.NewFileAsset("./nomad-agent-ca.pem"),
+			Source:     caCertFile,
+			Triggers:   pulumi.Array{caCertFile},
 		}, pulumi.DependsOn([]pulumi.Resource{createEtcNomadDir}))
 		if err != nil {
 			return err
 		}
 
+		nomadConfigFile := pulumi.NewFileAsset("./nomad.hcl")
 		copyNomadConfig, err := remote.NewCopyToRemote(ctx, "copy-nomad-config", &remote.CopyToRemoteArgs{
 			Connection: conn,
 			RemotePath: pulumi.String("/etc/nomad.d/nomad.hcl"),
-			Source:     pulumi.NewFileAsset("./nomad.hcl"),
+			Source:     nomadConfigFile,
+			Triggers:   pulumi.Array{nomadConfigFile},
 		}, pulumi.DependsOn([]pulumi.Resource{createEtcNomadDir}))
 		if err != nil {
 			return err
 		}
 
+		nomadServiceConfigFile := pulumi.NewFileAsset("./nomad.service")
 		copyNomadServiceConfig, err := remote.NewCopyToRemote(ctx, "copy-nomad-service-config", &remote.CopyToRemoteArgs{
 			Connection: conn,
 			RemotePath: pulumi.String("/usr/lib/systemd/system/nomad.service"),
-			Source:     pulumi.NewFileAsset("./nomad.service"),
+			Source:     nomadServiceConfigFile,
+			Triggers:   pulumi.Array{nomadServiceConfigFile},
 		})
 		if err != nil {
 			return err
 		}
 
+		caCertKeySecret := cfg.RequireSecret("caCertKey")
 		copyCaCertKey, err := remote.NewCommand(ctx, "copy-ca-key", &remote.CommandArgs{
 			Connection: conn,
 			Environment: pulumi.StringMap{
-				"LC_CA_KEY": cfg.RequireSecret("caCertKey"),
+				"LC_CA_KEY": caCertKeySecret,
 			},
-			Create: pulumi.String("echo \"$LC_CA_KEY\" > /etc/nomad.d/nomad-agent-ca-key.pem"),
+			Create:   pulumi.String("echo \"$LC_CA_KEY\" > /etc/nomad.d/nomad-agent-ca-key.pem"),
+			Triggers: pulumi.Array{caCertKeySecret},
 		}, pulumi.DependsOn([]pulumi.Resource{createEtcNomadDir}))
 		if err != nil {
 			return err
@@ -146,11 +154,18 @@ func main() {
 		chownEtcNomadDir, err := remote.NewCommand(ctx, "chown-etc-nomad-dir-before-server-cert", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("chown -R nomad:nomad /etc/nomad.d"),
+			Triggers: pulumi.Array{
+				createEtcNomadDir,
+				copyCaCert,
+				copyCaCertKey,
+				copyNomadConfig,
+			},
 		}, pulumi.DependsOn([]pulumi.Resource{
 			waitForNomadUser,
 			createEtcNomadDir,
 			copyCaCert,
 			copyCaCertKey,
+			copyNomadConfig,
 		}))
 		if err != nil {
 			return err
@@ -159,15 +174,21 @@ func main() {
 		createServerCert, err := remote.NewCommand(ctx, "create-server-cert", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("cd /etc/nomad.d && nomad tls cert create -server -additional-dnsname=nomad-server-01.holochain.org"),
+			Triggers: pulumi.Array{
+				createEtcNomadDir,
+				copyCaCert,
+				copyCaCertKey,
+			},
 		}, pulumi.DependsOn([]pulumi.Resource{chownEtcNomadDir}))
 		if err != nil {
 			return err
 		}
 
+		jobRunnerPolicyFile := pulumi.NewFileAsset("./job-runner.policy.hcl")
 		copyJobRunnerPolicy, err := remote.NewCopyToRemote(ctx, "copy-job-runner-policy", &remote.CopyToRemoteArgs{
 			Connection: conn,
 			RemotePath: pulumi.String("/etc/nomad.d/job-runner.policy.hcl"),
-			Source:     pulumi.NewFileAsset("./job-runner.policy.hcl"),
+			Source:     jobRunnerPolicyFile,
 		})
 		if err != nil {
 			return err
@@ -176,6 +197,14 @@ func main() {
 		chownEtcNomadDir, err = remote.NewCommand(ctx, "chown-etc-nomad-dir", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("chown -R nomad:nomad /etc/nomad.d"),
+			Triggers: pulumi.Array{
+				createEtcNomadDir,
+				copyCaCert,
+				copyCaCertKey,
+				createServerCert,
+				copyNomadConfig,
+				copyJobRunnerPolicy,
+			},
 		}, pulumi.DependsOn([]pulumi.Resource{
 			waitForNomadUser,
 			createEtcNomadDir,
@@ -209,12 +238,14 @@ func main() {
 			return err
 		}
 
+		aclTokenSecret := cfg.RequireSecret("aclBootstrapToken")
 		aclBootstrap, err := remote.NewCommand(ctx, "acl-bootstrap", &remote.CommandArgs{
 			Connection: conn,
 			Environment: pulumi.StringMap{
-				"LC_ACL_TOKEN": cfg.RequireSecret("aclBootstrapToken"),
+				"LC_ACL_TOKEN": aclTokenSecret,
 			},
-			Create: pulumi.String("echo \"$LC_ACL_TOKEN\" | nomad acl bootstrap -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -"),
+			Create:   pulumi.String("echo \"$LC_ACL_TOKEN\" | nomad acl bootstrap -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -"),
+			Triggers: pulumi.Array{aclTokenSecret},
 		}, pulumi.DependsOn([]pulumi.Resource{startNomadService}))
 		if err != nil {
 			return err
@@ -223,6 +254,10 @@ func main() {
 		_, err = remote.NewCommand(ctx, "apply-job-runner-policy", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("nomad acl policy apply -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -description \"For running jobs and reading Node status in CI workflows\" job-runner /etc/nomad.d/job-runner.policy.hcl"),
+			Triggers: pulumi.Array{
+				copyJobRunnerPolicy,
+				aclBootstrap,
+			},
 		}, pulumi.DependsOn([]pulumi.Resource{
 			copyJobRunnerPolicy,
 			aclBootstrap,
