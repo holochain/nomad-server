@@ -84,7 +84,7 @@ func main() {
 			return err
 		}
 
-		_, err = remote.NewCommand(ctx, "create-opt-nomad-data-dir", &remote.CommandArgs{
+		createOptNomadDataDir, err := remote.NewCommand(ctx, "create-opt-nomad-data-dir", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("mkdir -p /opt/nomad/data && chown -R nomad:nomad /opt/nomad/data"),
 		}, pulumi.DependsOn([]pulumi.Resource{droplet}))
@@ -110,7 +110,7 @@ func main() {
 			return err
 		}
 
-		_, err = remote.NewCopyToRemote(ctx, "copy-nomad-service-config", &remote.CopyToRemoteArgs{
+		copyNomadServiceConfig, err := remote.NewCopyToRemote(ctx, "copy-nomad-service-config", &remote.CopyToRemoteArgs{
 			Connection: conn,
 			RemotePath: pulumi.String("/usr/lib/systemd/system/nomad.service"),
 			Source:     pulumi.NewFileAsset("./nomad.service"),
@@ -161,6 +161,26 @@ func main() {
 			createServerCert,
 			copyNomadConfig,
 		}))
+		if err != nil {
+			return err
+		}
+
+		enableNomadService, err := remote.NewCommand(ctx, "enable-nomad-service", &remote.CommandArgs{
+			Connection: conn,
+			Create:     pulumi.String("systemctl enable nomad.service"),
+		}, pulumi.DependsOn([]pulumi.Resource{
+			copyNomadServiceConfig,
+			chownEtcNomadDir,
+			createOptNomadDataDir,
+		}))
+		if err != nil {
+			return err
+		}
+
+		_, err = remote.NewCommand(ctx, "start-nomad-service", &remote.CommandArgs{
+			Connection: conn,
+			Create:     pulumi.String("systemctl start nomad.service"),
+		}, pulumi.DependsOn([]pulumi.Resource{enableNomadService}))
 		if err != nil {
 			return err
 		}
