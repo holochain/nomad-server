@@ -77,6 +77,14 @@ func main() {
 			DialErrorLimit: pulumi.Int(-1),
 		}
 
+		waitForNomadUser, err := remote.NewCommand(ctx, "wait-for-nomad-user", &remote.CommandArgs{
+			Connection: conn,
+			Create:     pulumi.String("until getent passwd nomad; do sleep 0.5; done"),
+		}, pulumi.DependsOn([]pulumi.Resource{droplet}))
+		if err != nil {
+			return err
+		}
+
 		createEtcNomadDir, err := remote.NewCommand(ctx, "create-etc-nomad-dir", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("mkdir -p /etc/nomad.d"),
@@ -88,7 +96,10 @@ func main() {
 		createOptNomadDataDir, err := remote.NewCommand(ctx, "create-opt-nomad-data-dir", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("mkdir -p /opt/nomad/data && chown -R nomad:nomad /opt/nomad/data"),
-		}, pulumi.DependsOn([]pulumi.Resource{droplet}))
+		}, pulumi.DependsOn([]pulumi.Resource{
+			droplet,
+			waitForNomadUser,
+		}))
 		if err != nil {
 			return err
 		}
@@ -136,6 +147,7 @@ func main() {
 			Connection: conn,
 			Create:     pulumi.String("chown -R nomad:nomad /etc/nomad.d"),
 		}, pulumi.DependsOn([]pulumi.Resource{
+			waitForNomadUser,
 			createEtcNomadDir,
 			copyCaCert,
 			copyCaCertKey,
@@ -156,6 +168,7 @@ func main() {
 			Connection: conn,
 			Create:     pulumi.String("chown -R nomad:nomad /etc/nomad.d"),
 		}, pulumi.DependsOn([]pulumi.Resource{
+			waitForNomadUser,
 			createEtcNomadDir,
 			copyCaCert,
 			copyCaCertKey,
