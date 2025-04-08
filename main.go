@@ -155,10 +155,9 @@ func main() {
 			Connection: conn,
 			Create:     pulumi.String("chown -R nomad:nomad /etc/nomad.d"),
 			Triggers: pulumi.Array{
-				createEtcNomadDir,
-				copyCaCert,
-				copyCaCertKey,
-				copyNomadConfig,
+				caCertFile,
+				caCertKeySecret,
+				nomadConfigFile,
 			},
 		}, pulumi.DependsOn([]pulumi.Resource{
 			waitForNomadUser,
@@ -175,9 +174,8 @@ func main() {
 			Connection: conn,
 			Create:     pulumi.String("cd /etc/nomad.d && rm -f global-server-nomad*.pem && nomad tls cert create -server -additional-dnsname=nomad-server-01.holochain.org"),
 			Triggers: pulumi.Array{
-				createEtcNomadDir,
-				copyCaCert,
-				copyCaCertKey,
+				caCertFile,
+				caCertKeySecret,
 			},
 		}, pulumi.DependsOn([]pulumi.Resource{chownEtcNomadDir}))
 		if err != nil {
@@ -198,12 +196,10 @@ func main() {
 			Connection: conn,
 			Create:     pulumi.String("chown -R nomad:nomad /etc/nomad.d"),
 			Triggers: pulumi.Array{
-				createEtcNomadDir,
-				copyCaCert,
-				copyCaCertKey,
-				createServerCert,
-				copyNomadConfig,
-				copyJobRunnerPolicy,
+				caCertFile,
+				caCertKeySecret,
+				nomadConfigFile,
+				jobRunnerPolicyFile,
 			},
 		}, pulumi.DependsOn([]pulumi.Resource{
 			waitForNomadUser,
@@ -234,8 +230,8 @@ func main() {
 			Connection: conn,
 			Create:     pulumi.String("systemctl daemon-reload && systemctl restart nomad.service"),
 			Triggers: pulumi.Array{
-				copyNomadConfig,
-				copyNomadServiceConfig,
+				nomadConfigFile,
+				nomadServiceConfigFile,
 			},
 		}, pulumi.DependsOn([]pulumi.Resource{
 			enableNomadService,
@@ -269,8 +265,7 @@ func main() {
 			},
 			Create: pulumi.String("nomad acl policy apply -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -token=\"$LC_ACL_TOKEN\" -description=\"For running jobs and reading Node status in CI workflows\" job-runner /etc/nomad.d/job-runner.policy.hcl"),
 			Triggers: pulumi.Array{
-				copyJobRunnerPolicy,
-				aclBootstrap,
+				jobRunnerPolicyFile,
 				aclTokenSecret,
 			},
 		}, pulumi.DependsOn([]pulumi.Resource{
