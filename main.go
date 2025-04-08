@@ -59,7 +59,7 @@ func main() {
 		if err != nil {
 			return err
 		}
-		_, err = digitalocean.NewReservedIpAssignment(ctx, "nomad-server-01-ip-assign", &digitalocean.ReservedIpAssignmentArgs{
+		reservedIpAssign, err := digitalocean.NewReservedIpAssignment(ctx, "nomad-server-01-ip-assign", &digitalocean.ReservedIpAssignmentArgs{
 			IpAddress: reservedIp.IpAddress,
 			DropletId: droplet.ID().ApplyT(func(dropletId string) (int, error) {
 				id, err := strconv.Atoi(dropletId)
@@ -71,7 +71,7 @@ func main() {
 		}
 
 		conn := remote.ConnectionArgs{
-			Host:           droplet.Ipv4Address,
+			Host:           reservedIpAssign.IpAddress,
 			User:           pulumi.String("root"),
 			PrivateKey:     cfg.RequireSecret("serverAccessPrivateKey"),
 			DialErrorLimit: pulumi.Int(-1),
@@ -80,7 +80,7 @@ func main() {
 		waitForNomadUser, err := remote.NewCommand(ctx, "wait-for-nomad-user", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("until getent passwd nomad; do sleep 0.5; done"),
-		}, pulumi.DependsOn([]pulumi.Resource{droplet}))
+		}, pulumi.DependsOn([]pulumi.Resource{reservedIpAssign}))
 		if err != nil {
 			return err
 		}
@@ -88,7 +88,7 @@ func main() {
 		createEtcNomadDir, err := remote.NewCommand(ctx, "create-etc-nomad-dir", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("mkdir -p /etc/nomad.d"),
-		}, pulumi.DependsOn([]pulumi.Resource{droplet}))
+		}, pulumi.DependsOn([]pulumi.Resource{reservedIpAssign}))
 		if err != nil {
 			return err
 		}
@@ -97,7 +97,7 @@ func main() {
 			Connection: conn,
 			Create:     pulumi.String("mkdir -p /opt/nomad/data && chown -R nomad:nomad /opt/nomad/data"),
 		}, pulumi.DependsOn([]pulumi.Resource{
-			droplet,
+			reservedIpAssign,
 			waitForNomadUser,
 		}))
 		if err != nil {
