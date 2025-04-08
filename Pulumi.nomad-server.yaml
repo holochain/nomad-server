@@ -1,6 +1,8 @@
 config:
   digitalocean:token:
     secure: AAABAJsSgYkshC0TTaCh52msRlkbYh+lTBCnHni5QRVB5ZpoS8pogh3/HzZwAPfrhbBpiJ6FeyRBHITy3BDuxaUWTkm1QMh6ts/YSqRSTj63nnrfVKafWNylvsaxN6cXYwgYPgBWHQ==
+  nomad-server:aclBootstrapToken:
+    secure: AAABALfNl2cP/Xge+RkVJKcfpuV+ySgwKy4DaoHMgjs0fFoLtBiJHHGTRyo4x3qgdJWjSUbxxjluEkOGDxCvjyZ9Z7Q=
   nomad-server:caCertKey:
     secure: AAABAFKGCiFAQotunGJ/trN4HJNKN40lndMPSIgukOVBaI6IXkVHOdbkz9zy426nLvgKL2BhMqEDJS43ZmfAekBc0pYYUSYwWIoK33rD485R5reRWf4pOdR4iQLpVRWjFLnvCrT31zTXVcFOurH0zzEpgNdptWqcZIQr7EL1sAmURYADCW0rJx9qAIPanX1MaJaYLwERPp4zhk/CXEnRHqbeOmv0IfIFhG5zhMwT1afV+7wDdQCi1VM3NB0Yahnzg+OZwe0mwmkfDSHUBP34WbahvCAbOYVf+UzOBcAQ7PqzbzHHzO7/K25lMv+fF84MaJIbEs5CkKgyAIKFjwwAd6Uf
   nomad-server:serverAccessPrivateKey:
