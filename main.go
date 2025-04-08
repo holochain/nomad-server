@@ -71,9 +71,10 @@ func main() {
 		}
 
 		conn := remote.ConnectionArgs{
-			Host:       droplet.Ipv4Address,
-			User:       pulumi.String("root"),
-			PrivateKey: cfg.RequireSecret("serverAccessPrivateKey"),
+			Host:           droplet.Ipv4Address,
+			User:           pulumi.String("root"),
+			PrivateKey:     cfg.RequireSecret("serverAccessPrivateKey"),
+			DialErrorLimit: pulumi.Int(-1),
 		}
 
 		createEtcNomadDir, err := remote.NewCommand(ctx, "create-etc-nomad-dir", &remote.CommandArgs{
