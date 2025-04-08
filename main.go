@@ -20,7 +20,7 @@ func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
 		cfg := config.New(ctx, "")
 		// Add SSH key to be used by Pulumi as part of the setup to DigitalOcean
-		_, err := digitalocean.NewSshKey(ctx, "nomad-server-access-key", &digitalocean.SshKeyArgs{
+		sshAccessKey, err := digitalocean.NewSshKey(ctx, "nomad-server-access-key", &digitalocean.SshKeyArgs{
 			Name:      pulumi.String("nomad-server-access-key"),
 			PublicKey: pulumi.String(cfg.Require("serverAccessPublicKey")),
 		})
@@ -36,7 +36,7 @@ func main() {
 			return err
 		}
 
-		getSshKeysResult, err := digitalocean.GetSshKeys(ctx, &digitalocean.GetSshKeysArgs{}, nil)
+		getSshKeysResult, err := digitalocean.GetSshKeys(ctx, &digitalocean.GetSshKeysArgs{}, pulumi.DependsOn([]pulumi.Resource{sshAccessKey}))
 		if err != nil {
 			return err
 		}
