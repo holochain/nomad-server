@@ -84,6 +84,14 @@ func main() {
 			return err
 		}
 
+		_, err = remote.NewCommand(ctx, "create-opt-nomad-data-dir", &remote.CommandArgs{
+			Connection: conn,
+			Create:     pulumi.String("mkdir -p /opt/nomad/data && chown -R nomad:nomad /opt/nomad/data"),
+		}, pulumi.DependsOn([]pulumi.Resource{droplet}))
+		if err != nil {
+			return err
+		}
+
 		copyCaCert, err := remote.NewCopyToRemote(ctx, "copy-ca-cert", &remote.CopyToRemoteArgs{
 			Connection: conn,
 			RemotePath: pulumi.String("/etc/nomad.d/nomad-agent-ca.pem"),
