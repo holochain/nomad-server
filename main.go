@@ -93,6 +93,15 @@ func main() {
 			return err
 		}
 
+		copyNomadConfig, err := remote.NewCopyToRemote(ctx, "copy-nomad-config", &remote.CopyToRemoteArgs{
+			Connection: conn,
+			RemotePath: pulumi.String("/etc/nomad.d/nomad.hcl"),
+			Source:     pulumi.NewFileAsset("./nomad.hcl"),
+		}, pulumi.DependsOn([]pulumi.Resource{createEtcNomadDir}))
+		if err != nil {
+			return err
+		}
+
 		_, err = remote.NewCopyToRemote(ctx, "copy-nomad-service-config", &remote.CopyToRemoteArgs{
 			Connection: conn,
 			RemotePath: pulumi.String("/usr/lib/systemd/system/nomad.service"),
@@ -108,6 +117,7 @@ func main() {
 		}, pulumi.DependsOn([]pulumi.Resource{
 			createEtcNomadDir,
 			copyCaCert,
+			copyNomadConfig,
 		}))
 		if err != nil {
 			return err
