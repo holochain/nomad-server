@@ -232,8 +232,15 @@ func main() {
 
 		startNomadService, err := remote.NewCommand(ctx, "start-nomad-service", &remote.CommandArgs{
 			Connection: conn,
-			Create:     pulumi.String("systemctl start nomad.service"),
-		}, pulumi.DependsOn([]pulumi.Resource{enableNomadService}))
+			Create:     pulumi.String("systemctl daemon-reload && systemctl restart nomad.service"),
+			Triggers: pulumi.Array{
+				copyNomadConfig,
+				copyNomadServiceConfig,
+			},
+		}, pulumi.DependsOn([]pulumi.Resource{
+			enableNomadService,
+			copyNomadServiceConfig,
+		}))
 		if err != nil {
 			return err
 		}
