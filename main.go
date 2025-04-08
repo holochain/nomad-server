@@ -191,10 +191,21 @@ func main() {
 			return err
 		}
 
-		_, err = remote.NewCommand(ctx, "start-nomad-service", &remote.CommandArgs{
+		startNomadService, err := remote.NewCommand(ctx, "start-nomad-service", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("systemctl start nomad.service"),
 		}, pulumi.DependsOn([]pulumi.Resource{enableNomadService}))
+		if err != nil {
+			return err
+		}
+
+		_, err = remote.NewCommand(ctx, "acl-bootstrap", &remote.CommandArgs{
+			Connection: conn,
+			Environment: pulumi.StringMap{
+				"LC_ACL_TOKEN": cfg.RequireSecret("aclBootstrapToken"),
+			},
+			Create: pulumi.String("echo \"$LC_ACL_TOKEN\" | nomad acl bootstrap -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -"),
+		}, pulumi.DependsOn([]pulumi.Resource{startNomadService}))
 		if err != nil {
 			return err
 		}
