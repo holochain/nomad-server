@@ -7,6 +7,7 @@ import (
 
 	"github.com/pulumi/pulumi-digitalocean/sdk/v4/go/digitalocean"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
 )
 
 func main() {
@@ -16,6 +17,16 @@ func main() {
 	}
 
 	pulumi.Run(func(ctx *pulumi.Context) error {
+		cfg := config.New(ctx, "")
+		// Add SSH key to be used by Pulumi as part of the setup to DigitalOcean
+		_, err := digitalocean.NewSshKey(ctx, "nomad-server-access-key", &digitalocean.SshKeyArgs{
+			Name:      pulumi.String("nomad-server-access-key"),
+			PublicKey: pulumi.String(cfg.Require("serverAccessPublicKey")),
+		})
+		if err != nil {
+			return err
+		}
+
 		region := digitalocean.RegionAMS3
 		reservedIp, err := digitalocean.NewReservedIp(ctx, "nomad-server-01-reserved-ip", &digitalocean.ReservedIpArgs{
 			Region: region,
