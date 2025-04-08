@@ -264,10 +264,14 @@ func main() {
 
 		_, err = remote.NewCommand(ctx, "apply-job-runner-policy", &remote.CommandArgs{
 			Connection: conn,
-			Create:     pulumi.String("nomad acl policy apply -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -description \"For running jobs and reading Node status in CI workflows\" job-runner /etc/nomad.d/job-runner.policy.hcl"),
+			Environment: pulumi.StringMap{
+				"LC_ACL_TOKEN": aclTokenSecret,
+			},
+			Create: pulumi.String("nomad acl policy apply -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -token=\"$LC_ACL_TOKEN\" -description=\"For running jobs and reading Node status in CI workflows\" job-runner /etc/nomad.d/job-runner.policy.hcl"),
 			Triggers: pulumi.Array{
 				copyJobRunnerPolicy,
 				aclBootstrap,
+				aclTokenSecret,
 			},
 		}, pulumi.DependsOn([]pulumi.Resource{
 			copyJobRunnerPolicy,
