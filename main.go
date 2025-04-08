@@ -130,13 +130,35 @@ func main() {
 			return err
 		}
 
-		_, err = remote.NewCommand(ctx, "chown-etc-nomad-dir", &remote.CommandArgs{
+		// Need to chown before creating certificate for the server
+		chownEtcNomadDir, err := remote.NewCommand(ctx, "chown-etc-nomad-dir-before-server-cert", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("chown -R nomad:nomad /etc/nomad.d"),
 		}, pulumi.DependsOn([]pulumi.Resource{
 			createEtcNomadDir,
 			copyCaCert,
 			copyCaCertKey,
+		}))
+		if err != nil {
+			return err
+		}
+
+		createServerCert, err := remote.NewCommand(ctx, "create-server-cert", &remote.CommandArgs{
+			Connection: conn,
+			Create:     pulumi.String("cd /etc/nomad.d && nomad tls cert create -server -additional-dnsname=nomad-server-01.holochain.org"),
+		}, pulumi.DependsOn([]pulumi.Resource{chownEtcNomadDir}))
+		if err != nil {
+			return err
+		}
+
+		chownEtcNomadDir, err = remote.NewCommand(ctx, "chown-etc-nomad-dir", &remote.CommandArgs{
+			Connection: conn,
+			Create:     pulumi.String("chown -R nomad:nomad /etc/nomad.d"),
+		}, pulumi.DependsOn([]pulumi.Resource{
+			createEtcNomadDir,
+			copyCaCert,
+			copyCaCertKey,
+			createServerCert,
 			copyNomadConfig,
 		}))
 		if err != nil {
