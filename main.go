@@ -74,7 +74,7 @@ func main() {
 			Host:           reservedIpAssign.IpAddress,
 			User:           pulumi.String("root"),
 			PrivateKey:     cfg.RequireSecret("serverAccessPrivateKey"),
-			DialErrorLimit: pulumi.Int(-1),
+			DialErrorLimit: pulumi.Int(60),
 		}
 
 		waitForNomadUser, err := remote.NewCommand(ctx, "wait-for-nomad-user", &remote.CommandArgs{
