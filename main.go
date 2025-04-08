@@ -64,7 +64,7 @@ func main() {
 				id, err := strconv.Atoi(dropletId)
 				return id, err
 			}).(pulumi.IntInput),
-		})
+		}, pulumi.DependsOn([]pulumi.Resource{reservedIp, droplet}))
 		if err != nil {
 			return err
 		}
