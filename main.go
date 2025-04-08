@@ -245,8 +245,12 @@ func main() {
 				"LC_ACL_TOKEN": aclTokenSecret,
 			},
 			Create:   pulumi.String("echo \"$LC_ACL_TOKEN\" | nomad acl bootstrap -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -"),
+			Logging:  remote.LoggingStderr, // Don't log stdout as it contains the token
 			Triggers: pulumi.Array{aclTokenSecret},
-		}, pulumi.DependsOn([]pulumi.Resource{startNomadService}))
+		},
+			pulumi.DependsOn([]pulumi.Resource{startNomadService}),
+			pulumi.AdditionalSecretOutputs([]string{"stdout"}), // Hide stdout as it conatins the token
+		)
 		if err != nil {
 			return err
 		}
