@@ -187,7 +187,8 @@ func main() {
 			Connection: conn,
 			RemotePath: pulumi.String("/etc/nomad.d/job-runner.policy.hcl"),
 			Source:     jobRunnerPolicyFile,
-		})
+			Triggers:   pulumi.Array{jobRunnerPolicyFile},
+		}, pulumi.DependsOn([]pulumi.Resource{createEtcNomadDir}))
 		if err != nil {
 			return err
 		}
