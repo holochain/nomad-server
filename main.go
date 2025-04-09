@@ -182,6 +182,18 @@ func main() {
 			return err
 		}
 
+		_, err = remote.NewCommand(ctx, "print-server-cert", &remote.CommandArgs{
+			Connection: conn,
+			Create:     pulumi.String("cat /etc/nomad.d/global-server-nomad.pem"),
+			Triggers: pulumi.Array{
+				caCertFile,
+				caCertKeySecret,
+			},
+		}, pulumi.DependsOn([]pulumi.Resource{createServerCert}))
+		if err != nil {
+			return err
+		}
+
 		jobRunnerPolicyFile := pulumi.NewFileAsset("./job-runner.policy.hcl")
 		copyJobRunnerPolicy, err := remote.NewCopyToRemote(ctx, "copy-job-runner-policy", &remote.CopyToRemoteArgs{
 			Connection: conn,
