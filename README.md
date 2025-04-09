@@ -97,6 +97,18 @@ across all servers on the cluster, thus it is managed by Pulumi.
 This token should also be stored in the Holochain shared vault of the password
 manager service so that all developers can access the admin token.
 
+To actually replace the ACL token you first need to reset the ACL bootstrap
+token used in Nomad before adding the new token here and re-running the
+workflow. See the
+[Nomad docs](https://developer.hashicorp.com/nomad/tutorials/access-control/access-control-bootstrap#re-bootstrap-acl-system)
+for resetting ACL.
+
+If a new ACL token is used then, any users of Nomad will need to re-generate a
+new ACL token using the policies that they need. This includes the token used
+in the Wind Tunnel CI which is also managed by Pulumi but in the
+[holochain/hc-github-config](https://github.com/holochain/hc-github-config)
+repo. This can be done through Nomad's web UI.
+
 Update the token with:
 
 ```sh
