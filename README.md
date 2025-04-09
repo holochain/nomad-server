@@ -72,6 +72,23 @@ This value is encrypted by Pulumi and stored in
 Remember to open a PR with the new token and allow the CI/Actions to apply the
 changes to Pulumi.
 
+## Changing the InfluxDB token
+
+Nomad requires a token to send metrics to the InfluxDB instance. This token is
+added as part of this flow.
+
+To change the token, run the following command:
+
+```sh
+pulumi config set --secret influxDBToken <new-token>
+```
+
+This value is encrypted by Pulumi and stored in
+[Pulumi.nomad-server.yaml](Pulumi.nomad-server.yaml).
+
+Remember to open a PR with the new token and allow the CI/Actions to apply the
+changes to Pulumi.
+
 ## Changing the ACL bootstrap token
 
 Nomad requires a token for bootstrapping ACL. This token should be shared
