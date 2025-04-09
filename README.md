@@ -122,7 +122,7 @@ nomad tls ca create
 ```
 
 The public certificate should be stored as
-[nomad-agent-ca.pem](nomad-agent-ca.pem) which will then be coppied over to the
+[nomad-agent-ca.pem](nomad-agent-ca.pem) which will then be copied over to the
 servers as part of this workflow. The key should also be saved in this stack
 but as a secret.
 
