@@ -277,6 +277,20 @@ func main() {
 			return err
 		}
 
+		influxDBTokenSecret := cfg.RequireSecret("influxDBToken")
+		_, err = remote.NewCommand(ctx, "add-influx-db-token-var", &remote.CommandArgs{
+			Connection: conn,
+			Environment: pulumi.StringMap{
+				"LC_ACL_TOKEN":    aclTokenSecret,
+				"LC_INFLUX_TOKEN": influxDBTokenSecret,
+			},
+			Create:   pulumi.String("nomad var put -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -token=\"$LC_ACL_TOKEN\" nomad/jobs/run_scenario INFLUX_TOKEN=\"$LC_INFLUX_TOKEN\""),
+			Triggers: pulumi.Array{influxDBTokenSecret},
+		}, pulumi.DependsOn([]pulumi.Resource{aclBootstrap}))
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
 }
