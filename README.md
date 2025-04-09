@@ -1,4 +1,5 @@
 # nomad-server
+
 A Pulumi definition for deploying a cluster of Nomad servers as DigitalOcean droplets.
 
 ## Development
@@ -9,16 +10,19 @@ First, make sure that you are in the Nix development shell or that you have
 installed `pulumi`, `pulumi-language-go`, and `go`.
 
 Then, log into Pulumi with:
+
 ```sh
 pulumi login
 ```
 
 Next, set the default organisation to `holochain` with:
+
 ```sh
 pulumi org set-default holochain
 ```
 
 Finally, select the Pulumi stack that you want to use. For this repo it is `nomad-server`.
+
 ```sh
 pulumi stack select nomad-server
 ```
@@ -32,6 +36,7 @@ with the most important function being
 which allows the creation and management of droplets.
 
 Then preview the changes with:
+
 ```sh
 pulumi preview
 ```
@@ -44,10 +49,12 @@ changes to Pulumi.
 
 ## Changing the DigitalOcean token
 
-Pulumi requires a Personal Access Token (PAT) for DigitalOcean to make calls to the API.
+Pulumi requires a Personal Access Token (PAT) for DigitalOcean to make calls to
+the API.
 
 Currently the PAT is linked to the `cdunster` DigitalOcean user account. To
 change the token, run the following command:
+
 ```sh
 pulumi config set --secret digitalocean:token <new-token>
 ```
@@ -79,6 +86,7 @@ ssh root@nomad-server-01.holochain.org
 ```
 
 Then to bootstrap ACL run the following:
+
 ```console
 nomad acl bootstrap -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -address=https://127.0.0.1:4646
 ```
