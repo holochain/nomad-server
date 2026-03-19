@@ -7,3 +7,5 @@ apt:
       keyid: AA16FCBCA621E701
 packages:
   - nomad
+runcmd:
+  - curl -sSL https://repos.insights.digitalocean.com/install.sh | bash
