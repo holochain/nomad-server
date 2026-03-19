@@ -12,7 +12,15 @@ advertise {
 server {
   enabled          = true
   bootstrap_expect = 1 # should increase this after testing
-  job_gc_threshold = "24h"
+
+  # Reduce node garbage collection threshold to 1 hour,
+  # as we expect signficant node churn from threefold deployments.
+  node_gc_threshold = "1h"
+
+  # Reduce batch eval garbage collection threshold to 4 hours.
+  # This is longer than our ~1h batch job deployments to provide buffer for 
+  # longer run configurations we may add.
+  batch_eval_gc_threshold = "4h"
 }
 
 tls {
