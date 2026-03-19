@@ -50,7 +50,7 @@ func main() {
 			Image:    pulumi.String("ubuntu-24-04-x64"),
 			Name:     pulumi.String("nomad-server-01"),
 			Region:   region,
-			Size:     digitalocean.DropletSlugDropletS1VCPU512MB10GB,
+			Size:     digitalocean.DropletSlug_DropletS8VCPU32GB_AMD,
 			Ipv6:     pulumi.Bool(true),
 			Tags:     pulumi.StringArray{pulumi.String("nomad")},
 			SshKeys:  pulumi.ToStringArray(sshFingerprints),
