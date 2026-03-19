@@ -19,6 +19,7 @@ LimitNOFILE=65536
 LimitNPROC=infinity
 Restart=on-failure
 RestartSec=2
+TimeoutStartSec=300
 
 TasksMax=infinity
 
