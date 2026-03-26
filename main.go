@@ -80,6 +80,7 @@ func main() {
 		waitForNomadUser, err := remote.NewCommand(ctx, "wait-for-nomad-user", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("until getent passwd nomad; do sleep 0.5; done"),
+			Triggers:   pulumi.Array{droplet.ID()},
 		}, pulumi.DependsOn([]pulumi.Resource{reservedIpAssign}))
 		if err != nil {
 			return err
@@ -88,6 +89,7 @@ func main() {
 		createEtcNomadDir, err := remote.NewCommand(ctx, "create-etc-nomad-dir", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("mkdir -p /etc/nomad.d"),
+			Triggers:   pulumi.Array{droplet.ID()},
 		}, pulumi.DependsOn([]pulumi.Resource{reservedIpAssign}))
 		if err != nil {
 			return err
@@ -96,6 +98,7 @@ func main() {
 		createOptNomadDataDir, err := remote.NewCommand(ctx, "create-opt-nomad-data-dir", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("mkdir -p /opt/nomad/data && chown -R nomad:nomad /opt/nomad/data"),
+			Triggers:   pulumi.Array{droplet.ID()},
 		}, pulumi.DependsOn([]pulumi.Resource{
 			reservedIpAssign,
 			waitForNomadUser,
@@ -109,7 +112,7 @@ func main() {
 			Connection: conn,
 			RemotePath: pulumi.String("/etc/nomad.d/nomad-agent-ca.pem"),
 			Source:     caCertFile,
-			Triggers:   pulumi.Array{caCertFile},
+			Triggers:   pulumi.Array{caCertFile, droplet.ID()},
 		}, pulumi.DependsOn([]pulumi.Resource{createEtcNomadDir}))
 		if err != nil {
 			return err
@@ -120,7 +123,7 @@ func main() {
 			Connection: conn,
 			RemotePath: pulumi.String("/etc/nomad.d/nomad.hcl"),
 			Source:     nomadConfigFile,
-			Triggers:   pulumi.Array{nomadConfigFile},
+			Triggers:   pulumi.Array{nomadConfigFile, droplet.ID()},
 		}, pulumi.DependsOn([]pulumi.Resource{createEtcNomadDir}))
 		if err != nil {
 			return err
@@ -131,7 +134,7 @@ func main() {
 			Connection: conn,
 			RemotePath: pulumi.String("/usr/lib/systemd/system/nomad.service"),
 			Source:     nomadServiceConfigFile,
-			Triggers:   pulumi.Array{nomadServiceConfigFile},
+			Triggers:   pulumi.Array{nomadServiceConfigFile, droplet.ID()},
 		})
 		if err != nil {
 			return err
@@ -144,7 +147,7 @@ func main() {
 				"LC_CA_KEY": caCertKeySecret,
 			},
 			Create:   pulumi.String("echo \"$LC_CA_KEY\" > /etc/nomad.d/nomad-agent-ca-key.pem"),
-			Triggers: pulumi.Array{caCertKeySecret},
+			Triggers: pulumi.Array{caCertKeySecret, droplet.ID()},
 		}, pulumi.DependsOn([]pulumi.Resource{createEtcNomadDir}))
 		if err != nil {
 			return err
@@ -158,6 +161,7 @@ func main() {
 				caCertFile,
 				caCertKeySecret,
 				nomadConfigFile,
+				droplet.ID(),
 			},
 		}, pulumi.DependsOn([]pulumi.Resource{
 			waitForNomadUser,
@@ -176,6 +180,7 @@ func main() {
 			Triggers: pulumi.Array{
 				caCertFile,
 				caCertKeySecret,
+				droplet.ID(),
 			},
 		}, pulumi.DependsOn([]pulumi.Resource{chownEtcNomadDir}))
 		if err != nil {
@@ -188,6 +193,7 @@ func main() {
 			Triggers: pulumi.Array{
 				caCertFile,
 				caCertKeySecret,
+				droplet.ID(),
 			},
 		}, pulumi.DependsOn([]pulumi.Resource{createServerCert}))
 		if err != nil {
@@ -199,7 +205,7 @@ func main() {
 			Connection: conn,
 			RemotePath: pulumi.String("/etc/nomad.d/job-runner.policy.hcl"),
 			Source:     jobRunnerPolicyFile,
-			Triggers:   pulumi.Array{jobRunnerPolicyFile},
+			Triggers:   pulumi.Array{jobRunnerPolicyFile, droplet.ID()},
 		}, pulumi.DependsOn([]pulumi.Resource{createEtcNomadDir}))
 		if err != nil {
 			return err
@@ -213,6 +219,7 @@ func main() {
 				caCertKeySecret,
 				nomadConfigFile,
 				jobRunnerPolicyFile,
+				droplet.ID(),
 			},
 		}, pulumi.DependsOn([]pulumi.Resource{
 			waitForNomadUser,
@@ -230,6 +237,7 @@ func main() {
 		enableNomadService, err := remote.NewCommand(ctx, "enable-nomad-service", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("systemctl enable nomad.service"),
+			Triggers:   pulumi.Array{droplet.ID()},
 		}, pulumi.DependsOn([]pulumi.Resource{
 			copyNomadServiceConfig,
 			chownEtcNomadDir,
@@ -245,6 +253,7 @@ func main() {
 			Triggers: pulumi.Array{
 				nomadConfigFile,
 				nomadServiceConfigFile,
+				droplet.ID(),
 			},
 		}, pulumi.DependsOn([]pulumi.Resource{
 			enableNomadService,
@@ -262,7 +271,7 @@ func main() {
 			},
 			Create:   pulumi.String("echo \"$LC_ACL_TOKEN\" | nomad acl bootstrap -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -"),
 			Logging:  remote.LoggingStderr, // Don't log stdout as it contains the token
-			Triggers: pulumi.Array{aclTokenSecret},
+			Triggers: pulumi.Array{aclTokenSecret, droplet.ID()},
 		},
 			pulumi.DependsOn([]pulumi.Resource{startNomadService}),
 			pulumi.AdditionalSecretOutputs([]string{"stdout"}), // Hide stdout as it conatins the token
@@ -280,6 +289,7 @@ func main() {
 			Triggers: pulumi.Array{
 				jobRunnerPolicyFile,
 				aclTokenSecret,
+				droplet.ID(),
 			},
 		}, pulumi.DependsOn([]pulumi.Resource{
 			copyJobRunnerPolicy,
@@ -297,7 +307,7 @@ func main() {
 				"LC_INFLUX_TOKEN": influxDBTokenSecret,
 			},
 			Create:   pulumi.String("nomad var put -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -token=\"$LC_ACL_TOKEN\" nomad/jobs/run_scenario INFLUX_TOKEN=\"$LC_INFLUX_TOKEN\""),
-			Triggers: pulumi.Array{influxDBTokenSecret},
+			Triggers: pulumi.Array{influxDBTokenSecret, droplet.ID()},
 		}, pulumi.DependsOn([]pulumi.Resource{aclBootstrap}))
 		if err != nil {
 			return err
