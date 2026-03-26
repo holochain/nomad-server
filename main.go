@@ -263,7 +263,7 @@ func main() {
 			Triggers: pulumi.Array{aclTokenSecret, droplet.ID()},
 		},
 			pulumi.DependsOn([]pulumi.Resource{startNomadService}),
-			pulumi.AdditionalSecretOutputs([]string{"stdout"}), // Hide stdout as it conatins the token
+			pulumi.AdditionalSecretOutputs([]string{"stdout"}), // Hide stdout as it contains the token
 		)
 		if err != nil {
 			return err
