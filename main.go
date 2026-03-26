@@ -172,7 +172,7 @@ func main() {
 
 		createServerCert, err := remote.NewCommand(ctx, "create-server-cert", &remote.CommandArgs{
 			Connection: conn,
-			Create:     pulumi.String("cd /etc/nomad.d && rm -f global-server-nomad*.pem && nomad tls cert create -server -additional-dnsname=nomad-server-01.holochain.org"),
+			Create:     pulumi.String("cd /etc/nomad.d && rm -f global-server-nomad*.pem && nomad tls cert create -server -additional-dnsname=nomad-server-01.holochain.org && rm -f nomad-agent-ca-key.pem"),
 			Triggers: pulumi.Array{
 				caCertFile,
 				caCertKeySecret,
