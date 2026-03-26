@@ -231,6 +231,8 @@ func main() {
 			Triggers: pulumi.Array{
 				copyNomadConfig.ID(),
 				copyNomadServiceConfig.ID(),
+				copyJobRunnerPolicy.ID(),
+				createServerCert.ID(),
 				droplet.ID(),
 			},
 		}, pulumi.DependsOn([]pulumi.Resource{enableNomadService}))
