@@ -262,7 +262,7 @@ func main() {
 			Environment: pulumi.StringMap{
 				"LC_ACL_TOKEN": aclTokenSecret,
 			},
-			Create: pulumi.String("nomad acl policy apply -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -token=\"$LC_ACL_TOKEN\" -description=\"For running jobs and reading Node status in CI workflows\" job-runner /etc/nomad.d/job-runner.policy.hcl"),
+			Create: pulumi.String("nomad acl policy apply -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -token=\"$LC_ACL_TOKEN\" -description=\"For running jobs, reading Node status, and cancelling allocations in CI workflows\" job-runner /etc/nomad.d/job-runner.policy.hcl"),
 			Triggers: pulumi.Array{
 				copyJobRunnerPolicy.ID(),
 				aclBootstrap.ID(),
