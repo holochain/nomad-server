@@ -81,7 +81,7 @@ func main() {
 			Connection: conn,
 			Create:     pulumi.String("until getent passwd nomad; do sleep 0.5; done"),
 			Triggers:   pulumi.Array{droplet.ID()},
-		}, pulumi.DependsOn([]pulumi.Resource{reservedIpAssign}))
+		})
 		if err != nil {
 			return err
 		}
@@ -90,7 +90,7 @@ func main() {
 			Connection: conn,
 			Create:     pulumi.String("mkdir -p /etc/nomad.d"),
 			Triggers:   pulumi.Array{droplet.ID()},
-		}, pulumi.DependsOn([]pulumi.Resource{reservedIpAssign}))
+		})
 		if err != nil {
 			return err
 		}
