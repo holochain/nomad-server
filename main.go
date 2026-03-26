@@ -99,10 +99,7 @@ func main() {
 			Connection: conn,
 			Create:     pulumi.String("mkdir -p /opt/nomad/data && chown -R nomad:nomad /opt/nomad/data"),
 			Triggers:   pulumi.Array{droplet.ID()},
-		}, pulumi.DependsOn([]pulumi.Resource{
-			reservedIpAssign,
-			waitForNomadUser,
-		}))
+		}, pulumi.DependsOn([]pulumi.Resource{waitForNomadUser}))
 		if err != nil {
 			return err
 		}
@@ -165,7 +162,6 @@ func main() {
 			},
 		}, pulumi.DependsOn([]pulumi.Resource{
 			waitForNomadUser,
-			createEtcNomadDir,
 			copyCaCert,
 			copyCaCertKey,
 			copyNomadConfig,
@@ -222,10 +218,6 @@ func main() {
 				droplet.ID(),
 			},
 		}, pulumi.DependsOn([]pulumi.Resource{
-			waitForNomadUser,
-			createEtcNomadDir,
-			copyCaCert,
-			copyCaCertKey,
 			createServerCert,
 			copyNomadConfig,
 			copyJobRunnerPolicy,
@@ -255,10 +247,7 @@ func main() {
 				nomadServiceConfigFile,
 				droplet.ID(),
 			},
-		}, pulumi.DependsOn([]pulumi.Resource{
-			enableNomadService,
-			copyNomadServiceConfig,
-		}))
+		}, pulumi.DependsOn([]pulumi.Resource{enableNomadService}))
 		if err != nil {
 			return err
 		}
