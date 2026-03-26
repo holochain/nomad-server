@@ -274,13 +274,17 @@ func main() {
 		}
 
 		influxDBTokenSecret := cfg.RequireSecret("influxDBToken")
-		_, err = remote.NewCommand(ctx, "add-influx-db-token-var", &remote.CommandArgs{
+		unytDurableObjectsURL := cfg.Require("unytDurableObjectsURL")
+		unytDurableObjectsSecret := cfg.RequireSecret("unytDurableObjectsSecret")
+		_, err = remote.NewCommand(ctx, "add-nomad-jobs-vars", &remote.CommandArgs{
 			Connection: conn,
 			Environment: pulumi.StringMap{
-				"LC_ACL_TOKEN":    aclTokenSecret,
-				"LC_INFLUX_TOKEN": influxDBTokenSecret,
+				"LC_ACL_TOKEN":                   aclTokenSecret,
+				"LC_INFLUX_TOKEN":                influxDBTokenSecret,
+				"LC_UNYT_DURABLE_OBJECTS_URL":    pulumi.String(unytDurableObjectsURL),
+				"LC_UNYT_DURABLE_OBJECTS_SECRET": unytDurableObjectsSecret,
 			},
-			Create:   pulumi.String("nomad var put -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -token=\"$LC_ACL_TOKEN\" nomad/jobs INFLUX_TOKEN=\"$LC_INFLUX_TOKEN\""),
+			Create:   pulumi.String("nomad var put -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -token=\"$LC_ACL_TOKEN\" nomad/jobs INFLUX_TOKEN=\"$LC_INFLUX_TOKEN\" UNYT_DURABLE_OBJECTS_URL=\"$LC_UNYT_DURABLE_OBJECTS_URL\" UNYT_DURABLE_OBJECTS_SECRET=\"$LC_UNYT_DURABLE_OBJECTS_SECRET\""),
 			Triggers: pulumi.Array{influxDBTokenSecret, droplet.ID()},
 		}, pulumi.DependsOn([]pulumi.Resource{aclBootstrap}))
 		if err != nil {
