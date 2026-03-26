@@ -151,7 +151,7 @@ func main() {
 		}
 
 		// Need to chown before creating certificate for the server
-		chownEtcNomadDir, err := remote.NewCommand(ctx, "chown-etc-nomad-dir-before-server-cert", &remote.CommandArgs{
+		chownEtcNomadDirPreCert, err := remote.NewCommand(ctx, "chown-etc-nomad-dir-before-server-cert", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("chown -R nomad:nomad /etc/nomad.d"),
 			Triggers: pulumi.Array{
@@ -178,7 +178,7 @@ func main() {
 				caCertKeySecret,
 				droplet.ID(),
 			},
-		}, pulumi.DependsOn([]pulumi.Resource{chownEtcNomadDir}))
+		}, pulumi.DependsOn([]pulumi.Resource{chownEtcNomadDirPreCert}))
 		if err != nil {
 			return err
 		}
@@ -207,7 +207,7 @@ func main() {
 			return err
 		}
 
-		chownEtcNomadDir, err = remote.NewCommand(ctx, "chown-etc-nomad-dir", &remote.CommandArgs{
+		chownEtcNomadDirFinal, err := remote.NewCommand(ctx, "chown-etc-nomad-dir", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("chown -R nomad:nomad /etc/nomad.d"),
 			Triggers: pulumi.Array{
@@ -232,7 +232,7 @@ func main() {
 			Triggers:   pulumi.Array{droplet.ID()},
 		}, pulumi.DependsOn([]pulumi.Resource{
 			copyNomadServiceConfig,
-			chownEtcNomadDir,
+			chownEtcNomadDirFinal,
 			createOptNomadDataDir,
 		}))
 		if err != nil {
