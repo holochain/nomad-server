@@ -5,8 +5,8 @@ acl {
 }
 
 advertise {
-  http = "{{ GetPublicIP }}"
-  rpc  = "{{ GetPublicIP }}"
+  http = "nomad-server-01.holochain.org"
+  rpc  = "nomad-server-01.holochain.org"
 }
 
 server {
