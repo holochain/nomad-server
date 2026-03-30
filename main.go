@@ -284,7 +284,7 @@ func main() {
 				"LC_UNYT_DURABLE_OBJECTS_URL":    unytDurableObjectsURL,
 				"LC_UNYT_DURABLE_OBJECTS_SECRET": unytDurableObjectsSecret,
 			},
-			Create: pulumi.String("nomad var put -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -token=\"$LC_ACL_TOKEN\" nomad/jobs INFLUX_TOKEN=\"$LC_INFLUX_TOKEN\" UNYT_DURABLE_OBJECTS_URL=\"$LC_UNYT_DURABLE_OBJECTS_URL\" UNYT_DURABLE_OBJECTS_SECRET=\"$LC_UNYT_DURABLE_OBJECTS_SECRET\""),
+			Create: pulumi.String("nomad var put -force -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -token=\"$LC_ACL_TOKEN\" nomad/jobs INFLUX_TOKEN=\"$LC_INFLUX_TOKEN\" UNYT_DURABLE_OBJECTS_URL=\"$LC_UNYT_DURABLE_OBJECTS_URL\" UNYT_DURABLE_OBJECTS_SECRET=\"$LC_UNYT_DURABLE_OBJECTS_SECRET\""),
 			Triggers: pulumi.Array{
 				influxDBTokenSecret,
 				unytDurableObjectsURL,
