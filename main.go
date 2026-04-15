@@ -198,6 +198,17 @@ func main() {
 			return err
 		}
 
+		nodeReaderPolicyFile := pulumi.NewFileAsset("./node-reader.policy.hcl")
+		copyNodeReaderPolicy, err := remote.NewCopyToRemote(ctx, "copy-node-reader-policy", &remote.CopyToRemoteArgs{
+			Connection: conn,
+			RemotePath: pulumi.String("/etc/nomad.d/node-reader.policy.hcl"),
+			Source:     nodeReaderPolicyFile,
+			Triggers:   pulumi.Array{nodeReaderPolicyFile, droplet.ID()},
+		}, pulumi.DependsOn([]pulumi.Resource{createEtcNomadDir}))
+		if err != nil {
+			return err
+		}
+
 		chownEtcNomadDirFinal, err := remote.NewCommand(ctx, "chown-etc-nomad-dir", &remote.CommandArgs{
 			Connection: conn,
 			Create:     pulumi.String("chown -R nomad:nomad /etc/nomad.d"),
@@ -265,6 +276,22 @@ func main() {
 			Create: pulumi.String("nomad acl policy apply -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -token=\"$LC_ACL_TOKEN\" -description=\"For running jobs; reading Node status, logs, and file systems; and cancelling allocations in CI workflows\" job-runner /etc/nomad.d/job-runner.policy.hcl"),
 			Triggers: pulumi.Array{
 				copyJobRunnerPolicy.ID(),
+				aclBootstrap.ID(),
+				droplet.ID(),
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		_, err = remote.NewCommand(ctx, "apply-node-reader-policy", &remote.CommandArgs{
+			Connection: conn,
+			Environment: pulumi.StringMap{
+				"LC_ACL_TOKEN": aclTokenSecret,
+			},
+			Create: pulumi.String("nomad acl policy apply -address=https://localhost:4646 -ca-cert=/etc/nomad.d/nomad-agent-ca.pem -token=\"$LC_ACL_TOKEN\" -description=\"For reading the status of connected nodes\" node-reader /etc/nomad.d/node-reader.policy.hcl"),
+			Triggers: pulumi.Array{
+				copyNodeReaderPolicy.ID(),
 				aclBootstrap.ID(),
 				droplet.ID(),
 			},
