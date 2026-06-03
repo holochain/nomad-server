@@ -17,10 +17,10 @@ server {
   # as we expect signficant node churn from threefold deployments.
   node_gc_threshold = "1h"
 
-  # Reduce batch eval garbage collection threshold to 4 hours.
-  # This is longer than our ~1h batch job deployments to provide buffer for 
-  # longer run configurations we may add.
-  batch_eval_gc_threshold = "4h"
+  # Garbage collect allocations after 8 hours.
+  # This is longer than the time required to run all scenarios (~6h) and begin
+  # checking for successful/failed allocations.
+  batch_eval_gc_threshold = "8h"
 }
 
 tls {
