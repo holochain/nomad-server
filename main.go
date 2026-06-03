@@ -55,7 +55,7 @@ func main() {
 			Tags:     pulumi.StringArray{pulumi.String("nomad")},
 			SshKeys:  pulumi.ToStringArray(sshFingerprints),
 			UserData: pulumi.String(userData),
-		})
+		}, pulumi.IgnoreChanges([]string{"sshKeys"}))
 		if err != nil {
 			return err
 		}
